@@ -1,0 +1,15 @@
+[package]
+name = "m2p"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.100"
+clap = { version = "4.5.54", features = ["derive"]}
+genpdf = "0.2.0"
+hyphenation = "0.8.4"
+printpdf = "0.8.2"
+pulldown-cmark = "0.13.0"
+rusttype = "0.9.3"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"]}
