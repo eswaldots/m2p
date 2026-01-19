@@ -11,10 +11,12 @@ use clap::Parser;
 )]
 pub struct Opts {
     #[arg(
-        value_name = "INPUT",
+        value_name = "input",
         help = "Markdown file to convert ('-' for stdin)"
     )]
     pub input: String,
-    #[arg(value_name = "OUTPUT", help = "PDF file path output")]
+    #[arg(value_name = "output", help = "PDF file path output")]
     pub output: String,
+    #[arg(short, long)]
+    pub font_family: Option<String>,
 }
