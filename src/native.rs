@@ -1,118 +1,103 @@
 use crate::{
-    convert::Convert,
+    builder::PDFBuilder,
     metadata::{self, Metadata},
 };
 use anyhow::Result;
-use genpdf::{fonts::FontData, style::Style, *};
-use pulldown_cmark::{Event, HeadingLevel, MetadataBlockKind, Parser, Tag, TagEnd};
-use tracing::info;
+use genpdf::{
+    elements::{Break, Paragraph},
+    fonts::FontData,
+    style::{Style, StyledString},
+    *,
+};
+use pulldown_cmark::{Event, HeadingLevel, Parser, Tag, TagEnd};
+use std::io::BufWriter;
 
-#[derive(Copy, Clone)]
-enum FontSize {
-    Body,
-    Heading1,
-    Heading2,
-}
+pub struct NativePDFBuilder {}
 
-impl Into<u8> for FontSize {
-    fn into(self) -> u8 {
-        match self {
-            FontSize::Heading1 => 18,
-            FontSize::Heading2 => 16,
-            FontSize::Body => 12,
-        }
-    }
-}
-
-pub struct NativePDFConvert {}
-
-impl Convert for NativePDFConvert {
-    fn convert(
+impl PDFBuilder for NativePDFBuilder {
+    fn build(
         events: Parser,
         font: crate::font::ResolvedFont,
         metadata: Metadata,
     ) -> Result<Vec<u8>> {
-        info!("Using native pdf rendering engine");
-
-        let font_data = font;
-
         let font_family = genpdf::fonts::FontFamily {
-            regular: FontData::new(font_data.regular.into_owned(), None)?,
-            italic: FontData::new(font_data.italic.into_owned(), None)?,
-            bold: FontData::new(font_data.bold.into_owned(), None)?,
-            bold_italic: FontData::new(font_data.bold_italic.into_owned(), None)?,
+            regular: FontData::new(font.regular.into_owned(), None)?,
+            italic: FontData::new(font.italic.into_owned(), None)?,
+            bold: FontData::new(font.bold.into_owned(), None)?,
+            bold_italic: FontData::new(font.bold_italic.into_owned(), None)?,
         };
 
         let mut doc = Document::new(font_family);
-        doc.set_minimal_conformance();
+
+        doc.set_title(metadata.title);
         doc.set_line_spacing(1.25);
 
-        let mut decorator = genpdf::SimplePageDecorator::new();
+        let mut decorator = SimplePageDecorator::new();
+
         decorator.set_margins(20);
 
         doc.set_page_decorator(decorator);
-        doc.set_title(metadata.title);
 
-        // variable to track the font size
-        let mut current_style = Style::new().with_font_size(FontSize::Body.into());
-        // temporary text buffer
-        let mut s = String::new();
+        // TODO: move this to the struct
+        let mut style_stack = vec![Style::new()];
+        let mut text_buffer: Vec<StyledString> = Vec::with_capacity(32);
+        let mut current_block_style = Style::new();
 
         for event in events {
             match event {
-                Event::TaskListMarker(checked) => {
-                    doc.push(genpdf::elements::Paragraph::new("checked"));
-                }
-                Event::Start(tag) => {
-                    match tag {
-                        Tag::Heading { level, .. } => {
-                            current_style = Style::new();
+                Event::Start(tag) => match tag {
+                    Tag::Paragraph => {
+                        text_buffer.clear();
+                        current_block_style = Style::new()
+                    }
+                    Tag::Heading { level, .. } => {
+                        text_buffer.clear();
+                        let size = match level {
+                            HeadingLevel::H1 => 18,
+                            HeadingLevel::H2 => 16,
+                            _ => 14,
+                        };
+                        current_block_style = Style::new().bold().with_font_size(size);
+                        style_stack.push(Style::new().bold().with_font_size(size));
+                    }
+                    Tag::Strong => style_stack.push(style_stack.last().unwrap().bold()),
+                    Tag::Emphasis => style_stack.push(style_stack.last().unwrap().italic()),
+                    _ => {}
+                },
 
-                            let size = match level {
-                                HeadingLevel::H1 => {
-                                    current_style = current_style.bold();
-
-                                    FontSize::Heading1
-                                }
-                                HeadingLevel::H2 => {
-                                    current_style = current_style.bold();
-
-                                    FontSize::Heading2
-                                }
-                                _ => FontSize::Body,
-                            };
-
-                            current_style = current_style.with_font_size(size.into());
-                        }
-                        e => {
-                            dbg!("unknown event: {e}", e);
-                        }
-                    };
-                }
                 Event::Text(text) => {
-                    dbg!(&text);
-                    doc.push(genpdf::elements::Paragraph::new(&*text).styled(current_style));
+                    if let Some(style) = style_stack.last() {
+                        text_buffer.push(StyledString::new(text, *style));
+                    }
                 }
-                Event::End(tag) => {
-                    match tag {
-                        TagEnd::Heading(_) => {}
-                        TagEnd::Paragraph => {}
-                        _ => (),
-                    };
 
-                    current_style = Style::new().with_font_size(FontSize::Body.into());
-                }
-                e => {
-                    dbg!("unkwnown tag: {}", e);
-                }
+                Event::End(tag) => match tag {
+                    TagEnd::Paragraph | TagEnd::Heading(_) => {
+                        let mut p = Paragraph::new("");
+                        for span in text_buffer.drain(..) {
+                            p.push(span);
+                        }
+                        doc.push(p.styled(current_block_style));
+                        doc.push(Break::new(1));
+
+                        if matches!(tag, TagEnd::Heading(_)) {
+                            style_stack.pop();
+                        }
+                    }
+                    TagEnd::Strong | TagEnd::Emphasis => {
+                        style_stack.pop();
+                    }
+                    _ => {}
+                },
+
+                _ => {}
             }
         }
 
-        let mut w = Vec::new();
-
-        // TODO: this is slow by a reason
+        let mut w = BufWriter::with_capacity(1024 * 64, Vec::new());
         doc.render(&mut w)?;
 
-        Ok(w)
+        let result = w.into_inner().map_err(|e| anyhow::anyhow!(e))?;
+        Ok(result)
     }
 }

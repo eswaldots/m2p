@@ -1,5 +1,6 @@
 use crate::font::FontResolver;
-use crate::{cli::Opts, convert::Convert, native::NativePDFConvert};
+use crate::native::NativePDFBuilder;
+use crate::{builder::PDFBuilder, cli::Opts};
 use anyhow::Result;
 use clap::Parser;
 use pulldown_cmark::Parser as MDParser;
@@ -7,8 +8,8 @@ use std::time::Instant;
 use std::{fs, io::Write};
 use tracing::info;
 
+mod builder;
 mod cli;
-mod convert;
 mod font;
 mod metadata;
 mod native;
@@ -36,13 +37,13 @@ fn main() -> Result<()> {
 
     info!("Rendering markdown into pdf...");
 
-    let bytes = NativePDFConvert::convert(events, font, metadata)?;
+    let bytes = NativePDFBuilder::build(events, font, metadata)?;
 
     let elapsed = start.elapsed();
 
     info!("Rendering completed in {:?}", elapsed);
 
-    let mut file = fs::File::create(opts.output)?;
+    let mut file = fs::File::create(opts.output.unwrap_or(opts.input.replace(".md", ".pdf")))?;
 
     file.write_all(&bytes)?;
 

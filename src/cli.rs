@@ -16,7 +16,7 @@ pub struct Opts {
     )]
     pub input: String,
     #[arg(value_name = "output", help = "PDF file path output")]
-    pub output: String,
+    pub output: Option<String>,
     #[arg(short, long)]
     pub font_family: Option<String>,
 }
