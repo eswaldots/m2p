@@ -10,7 +10,9 @@ use tracing::info;
 mod cli;
 mod convert;
 mod font;
+mod metadata;
 mod native;
+mod yaml;
 
 fn main() -> Result<()> {
     init_logger();
@@ -28,11 +30,13 @@ fn main() -> Result<()> {
         _ => resolver.resolve_builtin()?,
     };
 
-    let events = MDParser::new(&data);
+    let (metadata, content) = metadata::Metadata::parse(&data)?;
+
+    let events = MDParser::new(&content);
 
     info!("Rendering markdown into pdf...");
 
-    let bytes = NativePDFConvert::convert(events, font)?;
+    let bytes = NativePDFConvert::convert(events, font, metadata)?;
 
     let elapsed = start.elapsed();
 

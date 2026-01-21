@@ -1381,6 +1381,7 @@ dependencies = [
  "font-kit",
  "genpdf",
  "hyphenation",
+ "matter",
  "printpdf 0.8.2",
  "pulldown-cmark",
  "rusttype 0.9.3",
@@ -1422,6 +1423,16 @@ name = "matches"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2532096657941c2fea9c289d370a250971c689d4f143798ff67113ec042024a5"
+
+[[package]]
+name = "matter"
+version = "0.1.0-alpha4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc16e839c57e0ad77957c42d39baab3692a1c6fa47692066470cddc24a5b0cd0"
+dependencies = [
+ "lazy_static",
+ "regex",
+]
 
 [[package]]
 name = "md-5"
@@ -2023,6 +2034,18 @@ dependencies = [
  "getrandom 0.2.17",
  "libredox",
  "thiserror",
+]
+
+[[package]]
+name = "regex"
+version = "1.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "843bc0191f75f3e22651ae5f1e72939ab2f72a4bc30fa80a066bd66edefc24d4"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-automata",
+ "regex-syntax",
 ]
 
 [[package]]

@@ -9,6 +9,7 @@ clap = { version = "4.5.54", features = ["derive"]}
 font-kit = "0.14.3"
 genpdf = "0.2.0"
 hyphenation = "0.8.4"
+matter = "0.1.0-alpha4"
 printpdf = "0.8.2"
 pulldown-cmark = "0.13.0"
 rusttype = "0.9.3"

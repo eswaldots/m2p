@@ -33,7 +33,6 @@ impl FontResolver {
         let source = SystemSource::new();
         let builtin = self.resolve_builtin()?;
 
-        // Helper para resolver variantes con fallback a la fuente embebida
         let load =
             |w: Weight, s: Style, fallback: Cow<'static, [u8]>| -> Result<Cow<'static, [u8]>> {
                 let h =
