@@ -13,6 +13,7 @@ matter = "0.1.0-alpha4"
 printpdf = "0.8.2"
 pulldown-cmark = "0.13.0"
 rusttype = "0.9.3"
+syntect = "5.3.0"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"]}
 
