@@ -8,7 +8,7 @@ pub struct Metadata {
 }
 
 impl Metadata {
-    pub fn parse<'a>(input: &'a str) -> Result<(Self, Cow<'a, str>)> {
+    pub fn parse<'a>(input: &'a str, path: &'a str) -> Result<(Self, Cow<'a, str>)> {
         if let Some((matter, content)) = matter::matter(input) {
             let reader = YAMLReader::new(&matter);
 
@@ -29,6 +29,25 @@ impl Metadata {
             ));
         }
 
-        todo!("read the first line")
+        let title = input.lines().next();
+
+        match title {
+            Some(title) => {
+                return Ok((
+                    Metadata {
+                        title: title.replace("#", "").to_owned(),
+                    },
+                    Cow::from(input),
+                ));
+            }
+            None => {
+                return Ok((
+                    Metadata {
+                        title: path.to_owned(),
+                    },
+                    Cow::from(input),
+                ));
+            }
+        }
     }
 }

@@ -1,7 +1,4 @@
-use crate::{
-    builder::PDFBuilder,
-    metadata::{self, Metadata},
-};
+use crate::{builder::PDFBuilder, fonts::Fonts, metadata::Metadata};
 use anyhow::Result;
 use genpdf::{
     elements::{Break, Paragraph},
@@ -15,20 +12,25 @@ use std::io::BufWriter;
 pub struct NativePDFBuilder {}
 
 impl PDFBuilder for NativePDFBuilder {
-    fn build(
-        events: Parser,
-        font: crate::font::ResolvedFont,
-        metadata: Metadata,
-    ) -> Result<Vec<u8>> {
-        let font_family = genpdf::fonts::FontFamily {
-            regular: FontData::new(font.regular.into_owned(), None)?,
-            italic: FontData::new(font.italic.into_owned(), None)?,
-            bold: FontData::new(font.bold.into_owned(), None)?,
-            bold_italic: FontData::new(font.bold_italic.into_owned(), None)?,
+    fn build(events: Parser, fonts: Fonts, metadata: Metadata) -> Result<Vec<u8>> {
+        // TODO: use a Into<T> trait abstraction to perform this convertion
+        let sans = genpdf::fonts::FontFamily {
+            regular: FontData::new(fonts.sans.regular.into_owned(), None)?,
+            italic: FontData::new(fonts.sans.italic.into_owned(), None)?,
+            bold: FontData::new(fonts.sans.bold.into_owned(), None)?,
+            bold_italic: FontData::new(fonts.sans.bold_italic.into_owned(), None)?,
         };
 
-        let mut doc = Document::new(font_family);
+        let mono = genpdf::fonts::FontFamily {
+            regular: FontData::new(fonts.monospace.regular.into_owned(), None)?,
+            italic: FontData::new(fonts.monospace.italic.into_owned(), None)?,
+            bold: FontData::new(fonts.monospace.bold.into_owned(), None)?,
+            bold_italic: FontData::new(fonts.monospace.bold_italic.into_owned(), None)?,
+        };
 
+        let mut doc = Document::new(sans);
+
+        let mono = doc.add_font_family(mono);
         doc.set_title(metadata.title);
         doc.set_line_spacing(1.25);
 
@@ -60,6 +62,15 @@ impl PDFBuilder for NativePDFBuilder {
                         current_block_style = Style::new().bold().with_font_size(size);
                         style_stack.push(Style::new().bold().with_font_size(size));
                     }
+                    Tag::CodeBlock(kind) => match kind {
+                        pulldown_cmark::CodeBlockKind::Indented => {
+                            dbg!(kind);
+                            style_stack.push(style_stack.last().unwrap().with_font_family(mono));
+                        }
+                        pulldown_cmark::CodeBlockKind::Fenced(code) => {
+                            todo!("fenced")
+                        }
+                    },
                     Tag::Strong => style_stack.push(style_stack.last().unwrap().bold()),
                     Tag::Emphasis => style_stack.push(style_stack.last().unwrap().italic()),
                     _ => {}
@@ -84,7 +95,8 @@ impl PDFBuilder for NativePDFBuilder {
                             style_stack.pop();
                         }
                     }
-                    TagEnd::Strong | TagEnd::Emphasis => {
+                    // TODO: not pop in fenced codeblock
+                    TagEnd::Strong | TagEnd::Emphasis | TagEnd::CodeBlock => {
                         style_stack.pop();
                     }
                     _ => {}

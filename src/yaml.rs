@@ -1,7 +1,5 @@
 use std::borrow::Cow;
 
-use tracing::{debug, info};
-
 // a very minimal simple yaml reader
 pub struct YAMLReader<'a> {
     input: Cow<'a, str>,

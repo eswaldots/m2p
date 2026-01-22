@@ -1,4 +1,4 @@
-use crate::font::FontResolver;
+use crate::fonts::FontResolver;
 use crate::native::NativePDFBuilder;
 use crate::{builder::PDFBuilder, cli::Opts};
 use anyhow::Result;
@@ -10,7 +10,7 @@ use tracing::info;
 
 mod builder;
 mod cli;
-mod font;
+mod fonts;
 mod metadata;
 mod native;
 mod yaml;
@@ -26,18 +26,19 @@ fn main() -> Result<()> {
 
     let start = Instant::now();
 
-    let font = match opts.font_family {
+    let fonts = match opts.font_family {
         Some(pattern) => resolver.resolve(pattern)?,
         _ => resolver.resolve_builtin()?,
     };
 
-    let (metadata, content) = metadata::Metadata::parse(&data)?;
+    // TODO: use the actual file name instead of `opts.input`
+    let (metadata, content) = metadata::Metadata::parse(&data, &opts.input)?;
 
     let events = MDParser::new(&content);
 
     info!("Rendering markdown into pdf...");
 
-    let bytes = NativePDFBuilder::build(events, font, metadata)?;
+    let bytes = NativePDFBuilder::build(events, fonts, metadata)?;
 
     let elapsed = start.elapsed();
 
