@@ -174,7 +174,7 @@ mod code {
     use syntect::{
         easy::HighlightLines,
         highlighting::{Style as SyntectStyle, ThemeSet},
-        parsing::{SyntaxReference, SyntaxSet},
+        parsing::SyntaxSet,
         util::LinesWithEndings,
     };
 
