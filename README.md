@@ -4,6 +4,16 @@ m2p is a cli tool made to generate fast pdfs from markdown files is so freaking 
 
 inline code *`render`*
 
+👍
+
+- list
+- list2
+- list3
+
+1. list
+2. list2
+2. list3
+
 ```rust
 fn main() {
     println!("Hello world!")

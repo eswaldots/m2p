@@ -54,8 +54,10 @@ impl PDFBuilder for NativePDFBuilder {
                         text_buffer.clear();
                         current_block_style = Style::new()
                     }
-                    Tag::Heading { level, .. } => {
+                    Tag::List(_) => {
                         text_buffer.clear();
+                    }
+                    Tag::Heading { level, .. } => {
                         let size = match level {
                             HeadingLevel::H1 => 18,
                             HeadingLevel::H2 => 16,
@@ -66,13 +68,12 @@ impl PDFBuilder for NativePDFBuilder {
                     }
                     Tag::CodeBlock(kind) => match kind {
                         pulldown_cmark::CodeBlockKind::Indented => {
-                            dbg!(kind);
                             style_stack.push(style_stack.last().unwrap().with_font_family(mono));
                         }
                         pulldown_cmark::CodeBlockKind::Fenced(code) => {
                             lang = Some(code.into());
 
-                            doc.push(Break::new(1));
+                            // doc.push(Break::new(1));
                         }
                     },
                     Tag::Strong => style_stack.push(style_stack.last().unwrap().bold()),
@@ -90,6 +91,8 @@ impl PDFBuilder for NativePDFBuilder {
                     }
                     if let Some(style) = style_stack.last() {
                         text_buffer.push(StyledString::new(text, *style));
+
+                        continue;
                     }
                 }
                 Event::Code(text) => {
@@ -104,6 +107,36 @@ impl PDFBuilder for NativePDFBuilder {
                             p.push(span);
                         }
                         doc.push(p.styled(current_block_style));
+
+                        if let None = lang {
+                            doc.push(Break::new(1));
+                        }
+
+                        if matches!(tag, TagEnd::Heading(_)) {
+                            style_stack.pop();
+                        }
+                    }
+                    TagEnd::List(is_ordered) => {
+                        for (i, span) in text_buffer.drain(..).enumerate() {
+                            let mut p = Paragraph::new("");
+
+                            if is_ordered {
+                                p = p.string(format!("{}. ", i + 1));
+
+                                p = p.string(span);
+
+                                doc.push(Break::new(0));
+                            } else {
+                                p = p.string("• ");
+
+                                p = p.string(span);
+
+                                doc.push(Break::new(0));
+                            }
+
+                            doc.push(p.styled(current_block_style));
+                        }
+
                         doc.push(Break::new(1));
 
                         if matches!(tag, TagEnd::Heading(_)) {
@@ -130,23 +163,19 @@ impl PDFBuilder for NativePDFBuilder {
 }
 
 mod code {
-    use std::{
-        rc::Rc,
-        sync::{Arc, Mutex},
-    };
+    use std::borrow::Cow;
 
     use genpdf::{
-        Element, Margins, Mm, Position, RenderResult,
+        Element, Position, RenderResult,
         elements::{Break, Paragraph},
         fonts::{Font, FontFamily},
-        render::TextSection,
         style::{Color, Style, StyledString},
     };
     use syntect::{
         easy::HighlightLines,
         highlighting::{Style as SyntectStyle, ThemeSet},
-        parsing::SyntaxSet,
-        util::{LinesWithEndings, as_24_bit_terminal_escaped},
+        parsing::{SyntaxReference, SyntaxSet},
+        util::LinesWithEndings,
     };
 
     #[derive(Debug, Clone)]
@@ -173,23 +202,19 @@ mod code {
             mut area: genpdf::render::Area<'_>,
             style: genpdf::style::Style,
         ) -> Result<genpdf::RenderResult, genpdf::error::Error> {
-            let area = Arc::new(area);
             let mut result = RenderResult::default();
 
-            let margins = Margins::all(1.0);
-
-            let b_result = Break::new(1).render(context, Arc::clone(&area).into(), style)?;
-
-            // TODO: add a function to simplify this syntax
-            result.size.width += b_result.size.width;
-            result.size.height += b_result.size.height;
-
-            area.add_margins(margins);
+            // let margins = Margins::all(0.5);
+            //
+            // area.add_margins(margins);
 
             let ps = SyntaxSet::load_defaults_newlines();
             let ts = ThemeSet::load_defaults();
 
-            let syntax = ps.find_syntax_by_token(&self.lang).unwrap();
+            let syntax = ps
+                .find_syntax_by_token(&self.lang)
+                .unwrap_or(ps.find_syntax_plain_text());
+
             let mut h = HighlightLines::new(syntax, &ts.themes["base16-ocean.light"]);
             let mut buffers: Vec<Vec<StyledString>> = Vec::new();
 
@@ -198,8 +223,10 @@ mod code {
                 let mut line_buf: Vec<StyledString> = Vec::new();
 
                 for range in ranges.iter() {
+                    let text = Cow::Borrowed(range.1).replace("\n", "");
+
                     line_buf.push(StyledString::new(
-                        range.1,
+                        text,
                         Style::new()
                             .with_color(Color::Rgb(
                                 range.0.foreground.r,
@@ -222,25 +249,18 @@ mod code {
 
                 let p_result = p.render(context, area.clone(), style)?;
 
+                area.add_offset(Position::new(0, p_result.size.height));
+
                 result.size.width += p_result.size.width;
 
                 result.size.height += p_result.size.height;
-
-                let b_result = Break::new(1).render(context, area.clone(), style)?;
-
-                // TODO: add a function to simplify this syntax
-                result.size.width += b_result.size.width;
-                result.size.height += b_result.size.height;
             }
 
             let b_result = Break::new(1).render(context, area.clone(), style)?;
 
-            // TODO: add a function to simplify this syntax
+            // TODO: add a trait to simplify this syntax
             result.size.width += b_result.size.width;
             result.size.height += b_result.size.height;
-
-            result.size.width += 2.0.into();
-            result.size.height += 2.0.into();
 
             Ok(result)
         }
