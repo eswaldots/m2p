@@ -88,8 +88,6 @@ char *split(const MD_CHAR *line, int lim) {
 int handle_text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                 void *user_data) {
         DocumentWriter *dw = user_data;
-        printf("DEBUG: handling text: %s with type %d and size %d\n", text,
-               type, size);
 
         int tw;
         char *splitted;
@@ -99,6 +97,9 @@ int handle_text(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                 HPDF_Page_BeginText(dw->current_page);
 
                 splitted = split(text, size);
+
+                printf("DEBUG: handling text: %s with type %d and size %d\n",
+                       splitted, type, size);
 
                 tw = HPDF_Page_TextWidth(dw->current_page, splitted);
 
@@ -226,7 +227,13 @@ int main(int argc, char *argv[]) {
 
         free(buffer);
 
-        HPDF_SaveToFile(dw.doc, "./out.pdf");
+        // TODO: use a flag for output file
+        char *fout = malloc(sizeof(argv[1]));
+
+        // TODO: quit the .md extension
+        sprintf(fout, "%s.pdf", argv[1]);
+
+        HPDF_SaveToFile(dw.doc, fout);
 
         HPDF_Free(dw.doc);
 
