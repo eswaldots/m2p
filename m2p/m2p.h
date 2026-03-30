@@ -1,0 +1,4 @@
+typedef enum HEADING_FONT_SIZE {
+  HEADING_H1_SIZE = 24,
+  P_SIZE = 14,
+} HEADING_FONT_SIZE;

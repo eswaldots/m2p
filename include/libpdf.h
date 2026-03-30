@@ -6,7 +6,7 @@ typedef float Px;
 #define DEFAULT_DPI 72;
 
 static Px PAGE_MARGIN = 24;
-static Px LINE_HEIGHT = 28;
+static Px LINE_HEIGHT = 36;
 
 typedef enum FontType {
   FONT_BOLD,
@@ -18,5 +18,6 @@ typedef enum FontType {
 void InitDocument(char *filename);
 void CloseDocument();
 
-void WriteText(const char *text, Px font_size, FontType type);
+void SetFontTypeAndSize(Px font_size, FontType type);
+void WriteText(const char *text);
 void WriteHardBreak();

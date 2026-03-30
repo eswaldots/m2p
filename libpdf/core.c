@@ -10,9 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-HPDF_STDCALL void ErrorHandler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
-                               void *user_data) {
-  printf("ERROR: internal libHaru error\n");
+void ErrorHandler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
+                  void *user_data) {
+  fprintf(stderr, "\033[0;31mERROR:\033[0m internal libHaru error, ");
+  fprintf(stderr, "error_no: %lu detail_no: %lu\n", error_no, detail_no);
 };
 
 int SplitWords(const char *line, char **words) {
@@ -43,6 +44,7 @@ typedef struct PageData {
   char *filename;
   int xpos, ypos;
   Font font;
+  Px font_size;
   HPDF_Page page;
   HPDF_Doc pdf;
 } PageData;
@@ -75,6 +77,7 @@ void InitDocument(char *filename) {
   data.filename = filename;
   data.xpos = PAGE_MARGIN;
   data.ypos = HPDF_Page_GetHeight(page) - PAGE_MARGIN * 2;
+  data.font_size = 16;
   data.font.regular = regular;
   data.font.italic = italic;
   data.font.italic_bold = italic_bold;
@@ -92,8 +95,9 @@ void CloseDocument() {
   HPDF_Free(data.pdf);
 }
 
-void WriteText(const char *text, Px font_size, FontType type) {
+void SetFontTypeAndSize(Px font_size, FontType type) {
   // TODO: if font size doens't change don't make this call
+
   if (type == FONT_BOLD) {
     HPDF_Page_SetFontAndSize(data.page, data.font.bold, font_size);
   } else if (type == FONT_ITALIC) {
@@ -101,20 +105,21 @@ void WriteText(const char *text, Px font_size, FontType type) {
   } else if (type == FONT_ITALIC_BOLD) {
     HPDF_Page_SetFontAndSize(data.page, data.font.italic_bold, font_size);
   } else {
-
     HPDF_Page_SetFontAndSize(data.page, data.font.regular, font_size);
   }
 
+  data.font_size = font_size;
+}
+
+void WriteText(const char *text) {
   // we calculate the space width based on the font size
   const Px space_width = HPDF_Page_TextWidth(data.page, " ");
-  const Px line_height = font_size * 1.25;
+  const Px line_height = data.font_size * 1.25;
 
   HPDF_Page page = data.page;
 
   Px pw = HPDF_Page_GetWidth(page);
   Px tw = HPDF_Page_TextWidth(page, text);
-
-  printf("DEBUG: text width: %1.0f\n", tw);
 
   HPDF_Page_BeginText(page);
 
