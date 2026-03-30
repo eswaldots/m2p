@@ -1,0 +1,175 @@
+#include "../include/libpdf.h"
+
+#include "hpdf.h"
+#include <hpdf_doc.h>
+#include <hpdf_font.h>
+#include <hpdf_objects.h>
+#include <hpdf_types.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+HPDF_STDCALL void ErrorHandler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
+                               void *user_data) {
+  printf("ERROR: internal libHaru error\n");
+};
+
+int SplitWords(const char *line, char **words) {
+  char *buffer = malloc(strlen(line) - 1);
+
+  strcpy(buffer, line);
+
+  char *tok = strtok(buffer, " ");
+
+  int count = 0;
+
+  while (tok != NULL) {
+    words[count] = strdup(tok);
+
+    ++count;
+
+    tok = strtok(NULL, " ");
+  }
+
+  return count;
+}
+
+typedef struct Font {
+  HPDF_Font bold, regular, italic, italic_bold;
+} Font;
+
+typedef struct PageData {
+  char *filename;
+  int xpos, ypos;
+  Font font;
+  HPDF_Page page;
+  HPDF_Doc pdf;
+} PageData;
+
+PageData data = {0};
+
+void InitDocument(char *filename) {
+  HPDF_Doc pdf;
+
+  pdf = HPDF_New(ErrorHandler, NULL);
+
+  if (!pdf) {
+    printf("ERROR: cannot create pdf object.\n");
+
+    HPDF_Free(pdf);
+  }
+
+  HPDF_Page page;
+
+  page = HPDF_AddPage(pdf);
+
+  HPDF_Page_SetSize(page, HPDF_PAGE_SIZE_A4, HPDF_PAGE_PORTRAIT);
+
+  // TODO: add custom font support
+  HPDF_Font regular = HPDF_GetFont(pdf, "Helvetica", NULL);
+  HPDF_Font bold = HPDF_GetFont(pdf, "Helvetica-Bold", NULL);
+  HPDF_Font italic = HPDF_GetFont(pdf, "Helvetica-Oblique", NULL);
+  HPDF_Font italic_bold = HPDF_GetFont(pdf, "Helvetica-BoldOblique", NULL);
+
+  data.filename = filename;
+  data.xpos = PAGE_MARGIN;
+  data.ypos = HPDF_Page_GetHeight(page) - PAGE_MARGIN * 2;
+  data.font.regular = regular;
+  data.font.italic = italic;
+  data.font.italic_bold = italic_bold;
+  data.font.bold = bold;
+  data.page = page;
+  data.pdf = pdf;
+}
+
+void CloseDocument() {
+  HPDF_SetCompressionMode(data.pdf, HPDF_COMP_ALL);
+  HPDF_SetPageMode(data.pdf, HPDF_PAGE_MODE_USE_OUTLINE);
+
+  HPDF_SaveToFile(data.pdf, data.filename);
+
+  HPDF_Free(data.pdf);
+}
+
+void WriteText(const char *text, Px font_size, FontType type) {
+  // TODO: if font size doens't change don't make this call
+  if (type == FONT_BOLD) {
+    HPDF_Page_SetFontAndSize(data.page, data.font.bold, font_size);
+  } else if (type == FONT_ITALIC) {
+    HPDF_Page_SetFontAndSize(data.page, data.font.italic, font_size);
+  } else if (type == FONT_ITALIC_BOLD) {
+    HPDF_Page_SetFontAndSize(data.page, data.font.italic_bold, font_size);
+  } else {
+
+    HPDF_Page_SetFontAndSize(data.page, data.font.regular, font_size);
+  }
+
+  // we calculate the space width based on the font size
+  const Px space_width = HPDF_Page_TextWidth(data.page, " ");
+  const Px line_height = font_size * 1.25;
+
+  HPDF_Page page = data.page;
+
+  Px pw = HPDF_Page_GetWidth(page);
+  Px tw = HPDF_Page_TextWidth(page, text);
+
+  printf("DEBUG: text width: %1.0f\n", tw);
+
+  HPDF_Page_BeginText(page);
+
+  if (tw > pw) {
+    char **words = malloc(strlen(text));
+
+    // TODO: maybe in a higher level
+    const Px line_width = pw - PAGE_MARGIN * 2;
+    Px space_left = line_width;
+
+    // If not equal is because is not a newline
+    if (data.xpos != PAGE_MARGIN) {
+      space_left -= data.xpos;
+    }
+
+    printf("DEBUG: splitting words\n");
+    int length = SplitWords(text, words);
+
+    printf("DEBUG: words splitted up succesfully\n");
+
+    printf("DEBUG: length %d\n", length);
+    for (int i = 0; i < length; ++i) {
+      char *word = words[i];
+
+      Px ww = HPDF_Page_TextWidth(page, word);
+
+      if ((ww + space_width) > space_left) {
+        data.xpos = PAGE_MARGIN;
+        data.ypos -= line_height;
+
+        space_left = (line_width - ww);
+      } else {
+        space_left = space_left - (ww + space_width);
+      }
+
+      HPDF_Page_TextOut(page, data.xpos, data.ypos, word);
+
+      // 6.67 is the space size
+      data.xpos += ww + space_width;
+    }
+
+    free(words);
+  } else {
+    HPDF_Page_TextOut(page, data.xpos, data.ypos, text);
+
+    data.xpos += tw + space_width;
+  }
+
+  // data.xpos = PAGE_MARGIN;
+  // data.ypos -= LINE_HEIGHT;
+
+  HPDF_Page_EndText(page);
+}
+
+void WriteHardBreak() {
+  data.xpos = PAGE_MARGIN;
+  data.ypos -= LINE_HEIGHT;
+}
