@@ -1,0 +1,157 @@
+%PDF-1.3
+%·¾­ª
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+/PageMode /UseOutlines
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [ 8 0 R ]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Producer (Haru Free PDF Library 2.4.6)
+>>
+endobj
+4 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /StandardEncoding
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /StandardEncoding
+>>
+endobj
+6 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /StandardEncoding
+>>
+endobj
+7 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /StandardEncoding
+>>
+endobj
+8 0 obj
+<<
+/Type /Page
+/MediaBox [ 0 0 595.276 841.89001 ]
+/Contents 9 0 R
+/Resources <<
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+/Font <<
+/F1 4 0 R
+/F2 5 0 R
+>>
+>>
+/Parent 2 0 R
+/Annots [ 11 0 R ]
+>>
+endobj
+9 0 obj
+<<
+/Length 10 0 R
+>>
+stream
+/F1 12 Tf
+/F2 20 Tf
+BT
+36 769 Td
+(Nested Blocks) Tj
+ET
+/F1 12 Tf
+34 740 m
+34 741.104 34.89599 742 36 742 c
+37.104 742 38 741.104 38 740 c
+38 738.89599 37.104 738 36 738 c
+34.89599 738 34 738.89599 34 740 c
+f
+BT
+42 737 Td
+(foo ) Tj
+ET
+/F2 12 Tf
+BT
+62 737 Td
+(bar ) Tj
+ET
+BT
+0 0 1 rg
+84 737 Td
+(link) Tj
+0 0 0 rg
+ET
+0 0 1 rg
+83.32399 735.20001 20.676 0.5 re
+f
+0 0 0 rg
+/F1 12 Tf
+BT
+104 737 Td
+( baz) Tj
+ET
+/F1 12 Tf
+/F1 12 Tf
+/F1 12 Tf
+/F1 12 Tf
+
+endstream
+endobj
+10 0 obj
+444
+endobj
+11 0 obj
+<<
+/Rect [ 84 734 104.676 749 ]
+/Type /Annot
+/Subtype /Link
+/A <<
+/Type /Action
+/S /URI
+/URI (http:\057\057example.com)
+>>
+/P 8 0 R
+>>
+endobj
+xref
+0 12
+0000000000 65535 f
+0000000015 00000 n
+0000000087 00000 n
+0000000146 00000 n
+0000000207 00000 n
+0000000305 00000 n
+0000000408 00000 n
+0000000514 00000 n
+0000000624 00000 n
+0000000839 00000 n
+0000001338 00000 n
+0000001358 00000 n
+trailer
+<<
+/Root 1 0 R
+/Info 3 0 R
+/Size 12
+>>
+startxref
+1509
+%%EOF

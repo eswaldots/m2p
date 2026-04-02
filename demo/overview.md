@@ -91,14 +91,4 @@ int main() {
 
 My favorite search engine is [Duck Duck Go](https://duckduckgo.com).
 
-My favorite search engine is [Duck Duck Go](https://duckduckgo.com "The best search engine for privacy").
-
-<https://www.markdownguide.org>
-<fake@example.com>
-
-## Formatting Links
-
-I love supporting the **[libharu](https://github.com/libharu/libharu)**.
-This is the *[m2p repository](https://github.com/eswaldots/m2p)*.
-
-
+My favorite search engine is [Duck Duck Go](https://duckduckgo.com).

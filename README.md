@@ -37,10 +37,10 @@ By the moment, `m2p` is a huge WIP, so don't expect too much features.
 ## TODO
 
 - [ ] Support basic Markdown specification syntax
-    - [ ] Support headings
-    - [ ] Support paragraphs
-    - [ ] Support line breaks
-    - [ ] Support emphasis
+    - [x] Support headings
+    - [x] Support paragraphs
+    - [x] Support line breaks
+    - [x] Support emphasis
     - [ ] Support blockquotes
     - [ ] Support lists
     - [ ] Support code

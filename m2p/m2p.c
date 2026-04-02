@@ -6,123 +6,231 @@
 
 #include "util.h"
 
+typedef struct StyleBuffer {
+        char *detail;
+        MD_SPANTYPE current_span;
+        MD_BLOCKTYPE current_block;
+} StyleBuffer;
+
 int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                void *userdata) {
-  char *buffer = malloc(strlen(text));
+        if (type == MD_TEXT_SOFTBR) {
+                printf("DEBUG: Introducing soft break\n");
+                WriteSoftBreak();
 
-  strcpy(buffer, text);
+                return 0;
+        } else if (type == MD_TEXT_BR) {
+                printf("DEBUG: introducing hard break\n");
 
-  buffer[size] = '\0';
-  printf("DEBUG: Writing buffer to output: '%s'", buffer);
-  printf("with size '%d'\n", size);
+                WriteHardBreak();
 
-  WriteText(buffer);
+                return 0;
+        }
 
-  return 0;
+        char *buffer = malloc(strlen(text));
+
+        strcpy(buffer, text);
+
+        buffer[size] = '\0';
+        printf("DEBUG: Writing buffer to output: '%s'\n", buffer);
+
+        StyleBuffer *buf = userdata;
+
+        if (buf->current_span == MD_SPAN_A) {
+                WriteLink(buffer, buf->detail);
+
+                // TODO: convert to null
+                buf->current_span = MD_SPAN_DEL;
+
+                return 0;
+        } else {
+                WriteText(buffer);
+        }
+
+        return 0;
 }
+
 int EnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
-  if (type == MD_BLOCK_H) {
-    MD_BLOCK_H_DETAIL *size = (MD_BLOCK_H_DETAIL *)detail;
+        StyleBuffer *buf = userdata;
+        // TODO: use an array please
 
-    if (size->level == 1) {
-      // TODO: add kerning
-      SetFontTypeAndSize(HEADING_H1_SIZE, FONT_BOLD);
-    }
-  }
+        printf("type: %d\n", type);
+        if (type == MD_BLOCK_OL) {
+                buf->current_block = type;
+        }
 
-  return 0;
+        if (type == MD_BLOCK_H) {
+                MD_BLOCK_H_DETAIL *size = (MD_BLOCK_H_DETAIL *)detail;
+
+                if (size->level == 1) {
+                        // TODO: add a switch bro
+                        SetFontTypeAndSize(HEADING_H1_SIZE, FONT_BOLD);
+                } else if (size->level == 2) {
+                        SetFontTypeAndSize(HEADING_H2_SIZE, FONT_BOLD);
+                } else if (size->level == 3) {
+                        SetFontTypeAndSize(HEADING_H3_SIZE, FONT_BOLD);
+                } else if (size->level == 4) {
+                        SetFontTypeAndSize(HEADING_H4_SIZE, FONT_BOLD);
+                } else if (size->level == 5) {
+                        SetFontTypeAndSize(HEADING_H5_SIZE, FONT_BOLD);
+                } else if (size->level == 6) {
+                        SetFontTypeAndSize(HEADING_H6_SIZE, FONT_BOLD);
+                }
+        }
+
+        if (type == MD_BLOCK_LI) {
+                WriteDotSymbol();
+        }
+
+        return 0;
 };
 int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
-  printf("DEBUG: hard break\n");
-  WriteHardBreak();
+        StyleBuffer *buf = userdata;
 
-  // TODO: implement a style stack
-  SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
+        if (type == MD_BLOCK_LI) {
+                printf("DEBUG: Leaving block with soft break\n");
+                WriteSoftBreak();
 
-  return 0;
+                SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
+                return 0;
+        } else if (buf->current_block != MD_BLOCK_OL) {
+                printf("buf: %d\n", buf->current_block);
+                printf("DEBUG: Leaving block: %d \n", type);
+                printf("DEBUG: Leaving block with hard break\n");
+                WriteHardBreak();
+
+                SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
+                return 0;
+        }
+
+        // TODO: implement a style stack
+        SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
+
+        return 0;
 };
 
-int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) { return 0; };
+int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
+        // TODO: handle bold and italic
+        switch (type) {
+        case MD_SPAN_STRONG:
+                SetFontTypeAndSize(P_SIZE, FONT_BOLD);
+
+                break;
+        case MD_SPAN_EM:
+                SetFontTypeAndSize(P_SIZE, FONT_ITALIC);
+
+                break;
+        case MD_SPAN_A:
+                StyleBuffer *buf = userdata;
+
+                MD_SPAN_A_DETAIL *link = detail;
+
+                char *buffer = malloc(strlen(link->href.text));
+
+                strcpy(buffer, link->href.text);
+
+                buffer[link->href.size] = '\0';
+
+                buf->detail = buffer;
+                buf->current_span = MD_SPAN_A;
+        default:
+                break;
+        }
+
+        return 0;
+};
 
 int LeaveSpan(MD_SPANTYPE type, void *detail, void *userdata) {
-  printf("DEBUG: leaving span\n");
-  WriteHardBreak();
+        printf("DEBUG: Leaving span, resetting font style\n");
 
-  return 0;
+        SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
+        // WriteHardBreak();
+
+        return 0;
 };
 
+static void usage(void) {
+        printf("USAGE: m2p [...OPTIONS] [FILE]\n"
+               "Convert input FILE (or standard input) in Markdown format to "
+               "PDF.\n");
+}
+
 int main(int argc, char **argv) {
-  printf("DEBUG: Initializing m2p...\n");
+        printf("DEBUG: Initializing m2p...\n");
 
-  if (argc < 2) {
-    // TODO: better this output
-    printf("USAGE: m2p <target>\n");
-    printf("m2p -h for more help\n");
+        if (argc < 2) {
+                usage();
 
-    return 0;
-  }
+                return 0;
+        }
 
-  printf("DEBUG: Opening input file...\n");
-  FILE *f = fopen(argv[1], "r");
+        printf("DEBUG: Opening input file...\n");
+        FILE *f = fopen(argv[1], "r");
 
-  if (f == NULL) {
-    fprintf(stderr, "Error reading '%s' file, perhaps the file exists?\n",
-            argv[1]);
+        if (f == NULL) {
+                fprintf(stderr,
+                        "Error reading '%s' file, perhaps the file exists?\n",
+                        argv[1]);
 
-    return 1;
-  }
+                return 1;
+        }
 
-  printf("DEBUG: Reading input file...\n");
-  fseek(f, 0, SEEK_END);
+        printf("DEBUG: Reading input file...\n");
+        fseek(f, 0, SEEK_END);
 
-  printf("DEBUG: Reading length of input file...\n");
-  int length = ftell(f);
+        printf("DEBUG: Reading length of input file...\n");
+        int length = ftell(f);
 
-  fseek(f, 0, SEEK_SET);
+        fseek(f, 0, SEEK_SET);
 
-  printf("DEBUG: Allocating memory for input file buffer...\n");
-  char *buffer = malloc(length);
+        printf("DEBUG: Allocating memory for input file buffer...\n");
+        char *buffer = malloc(length);
 
-  fread(buffer, sizeof(char), length, f);
+        fread(buffer, sizeof(char), length, f);
+        fclose(f);
 
-  printf("DEBUG: Determining path of output file...\n");
-  // this will not wprk i think
-  char *obuffer = change_ext(argv[1]);
-  printf("DEBUG: Output file will be written to: '%s'\n", obuffer);
-  // The output is the same name of the file but instead of .md a .pdf extension
-  printf("DEBUG: Initializing document writing\n");
-  InitDocument(obuffer);
+        printf("DEBUG: Determining path of output file...\n");
+        // this will not wprk i think
+        char *obuffer = change_ext(argv[1]);
+        printf("DEBUG: Output file will be written to: '%s'\n", obuffer);
+        // The output is the same name of the file but instead of .md a .pdf
+        // extension
+        printf("DEBUG: Initializing document writing\n");
+        InitDocument(obuffer);
 
-  // now parse the logic
-  printf("DEBUG: Initializing parser struct\n");
-  MD_PARSER parser = {
-      .text = HandleText,
-      .leave_span = LeaveSpan,
-      .enter_span = EnterSpan,
-      .enter_block = EnterBlock,
-      .leave_block = LeaveBlock,
-      .debug_log = NULL,
-      .syntax = NULL,
-      .abi_version = 0,
-  };
+        // now parse the logic
+        printf("DEBUG: Initializing parser struct\n");
+        MD_PARSER parser = {
+            .text = HandleText,
+            .leave_span = LeaveSpan,
+            .enter_span = EnterSpan,
+            .enter_block = EnterBlock,
+            .leave_block = LeaveBlock,
+            .debug_log = NULL,
+            .syntax = NULL,
+            .abi_version = 0,
+        };
 
-  printf("DEBUG: Parsing document\n");
+        printf("DEBUG: Parsing document\n");
 
-  SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
-  md_parse(buffer, (MD_SIZE)length, &parser, NULL);
+        SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
 
-  printf("DEBUG: Parsing finished\n");
+        StyleBuffer buf = {0};
 
-  free(buffer);
+        md_parse(buffer, (MD_SIZE)length, &parser, &buf);
 
-  // WriteText("libpdf", 24, FONT_BOLD);
-  // WriteHardBreak();
-  // WriteText("libpdf", 14, FONT_BOLD);
-  // WriteText("is a C library wrapper for", 14, FONT_REGULAR);
-  // WriteText("libharu, a C library to write into PDF files", 14,
-  // FONT_REGULAR);
+        printf("DEBUG: Parsing finished\n");
 
-  CloseDocument();
+        free(buffer);
 
-  return 0;
+        // WriteText("libpdf", 24, FONT_BOLD);
+        // WriteHardBreak();
+        // WriteText("libpdf", 14, FONT_BOLD);
+        // WriteText("is a C library wrapper for", 14, FONT_REGULAR);
+        // WriteText("libharu, a C library to write into PDF files", 14,
+        // FONT_REGULAR);
+
+        CloseDocument();
+
+        return 0;
 }
