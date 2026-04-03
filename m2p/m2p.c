@@ -6,11 +6,54 @@
 
 #include "util.h"
 
+typedef struct {
+        MD_SPANTYPE type;
+        char *detail;
+} Span;
+
 typedef struct StyleBuffer {
         char *detail;
         MD_SPANTYPE current_span;
+        MD_SPANTYPE parent_span;
         MD_BLOCKTYPE current_block;
+        // TODO: maybe shouldn't be a fixed size, but I don't now edge cases
+        // where the span_stack overflows
+        Span spans_stack[256];
 } StyleBuffer;
+
+int GetMaxPosition(Span v[]) {
+        int i;
+        for (i = 0; v[i].type != '\0'; ++i)
+                ;
+
+        return i;
+};
+
+int IsInSpanStack(MD_SPANTYPE type, Span v[]) {
+        int max_pos = GetMaxPosition(v);
+
+        for (int i = 0; i < max_pos + 1; ++i) {
+                printf("IsInSpanStack: %d\n", v[i].type);
+                if ((v[i].type - 1) == type) {
+                        return 1;
+                }
+        }
+
+        return 0;
+}
+
+int GetSpanInStack(MD_SPANTYPE type, Span v[]) {
+        int max_pos = GetMaxPosition(v);
+
+        for (int i = 0; i < max_pos + 1; ++i) {
+                printf("GetSpanInStack: %d\n", v[i].type);
+                if ((v[i].type - 1) == type) {
+                        return i;
+                }
+        }
+
+        return -1;
+}
 
 int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                void *userdata) {
@@ -32,20 +75,30 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
         strcpy(buffer, text);
 
         buffer[size] = '\0';
-        printf("DEBUG: Writing buffer to output: '%s'\n", buffer);
 
         StyleBuffer *buf = userdata;
+        int index = GetMaxPosition(buf->spans_stack);
 
-        if (buf->current_span == MD_SPAN_A) {
-                WriteLink(buffer, buf->detail);
+        int is_italic = IsInSpanStack(MD_SPAN_EM, buf->spans_stack);
+        int is_bold = IsInSpanStack(MD_SPAN_STRONG, buf->spans_stack);
 
-                // TODO: convert to null
-                buf->current_span = MD_SPAN_DEL;
+        if (is_italic && is_bold) {
+                SetFontTypeAndSize(P_SIZE, FONT_ITALIC_BOLD);
+        } else if (is_bold) {
+                SetFontTypeAndSize(P_SIZE, FONT_BOLD);
+        } else if (is_italic) {
+                SetFontTypeAndSize(P_SIZE, FONT_ITALIC);
+        }
 
-                return 0;
+        if (IsInSpanStack(MD_SPAN_A, buf->spans_stack)) {
+                int i = GetSpanInStack(MD_SPAN_A, buf->spans_stack);
+
+                WriteLink(buffer, buf->spans_stack[i].detail);
         } else {
                 WriteText(buffer);
         }
+
+        free(buffer);
 
         return 0;
 }
@@ -111,18 +164,20 @@ int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
 
 int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
         // TODO: handle bold and italic
+
+        StyleBuffer *buf = userdata;
+        int index = GetMaxPosition(buf->spans_stack);
+        printf("PUTTING STACK %d IN: %d\n", type, index);
+
+        buf->spans_stack[index].type = type + 1;
+
+        for (int i = 0; i < index + 1; ++i) {
+                printf("DEBUG PRINT: %d\n", buf->spans_stack[i]);
+        }
+
+        // here will send the details
         switch (type) {
-        case MD_SPAN_STRONG:
-                SetFontTypeAndSize(P_SIZE, FONT_BOLD);
-
-                break;
-        case MD_SPAN_EM:
-                SetFontTypeAndSize(P_SIZE, FONT_ITALIC);
-
-                break;
         case MD_SPAN_A:
-                StyleBuffer *buf = userdata;
-
                 MD_SPAN_A_DETAIL *link = detail;
 
                 char *buffer = malloc(strlen(link->href.text));
@@ -131,8 +186,9 @@ int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
 
                 buffer[link->href.size] = '\0';
 
-                buf->detail = buffer;
-                buf->current_span = MD_SPAN_A;
+                printf("DEBUG: Inserting href detail in stack %d: %s\n", index,
+                       buffer);
+                buf->spans_stack[index].detail = buffer;
         default:
                 break;
         }
@@ -141,7 +197,14 @@ int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
 };
 
 int LeaveSpan(MD_SPANTYPE type, void *detail, void *userdata) {
+        StyleBuffer *buf = userdata;
+
         printf("DEBUG: Leaving span, resetting font style\n");
+
+        int index = GetMaxPosition(buf->spans_stack);
+
+        buf->spans_stack[index - 1].type = 0;
+        buf->spans_stack[index - 1].detail = 0;
 
         SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
         // WriteHardBreak();
@@ -216,6 +279,8 @@ int main(int argc, char **argv) {
         SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
 
         StyleBuffer buf = {0};
+
+        buf.spans_stack[0].type = '\0';
 
         md_parse(buffer, (MD_SIZE)length, &parser, &buf);
 
