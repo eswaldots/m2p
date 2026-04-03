@@ -75,53 +75,47 @@ endobj
 stream
 /F1 12 Tf
 /F2 20 Tf
-BT
-36 769 Td
-(Nested Blocks) Tj
-ET
 /F1 12 Tf
-34 740 m
-34 741.104 34.89599 742 36 742 c
-37.104 742 38 741.104 38 740 c
-38 738.89599 37.104 738 36 738 c
-34.89599 738 34 738.89599 34 740 c
-f
 BT
-42 737 Td
-(foo ) Tj
+36 737 Td
+(1) Tj
 ET
 /F2 12 Tf
 BT
-62 737 Td
-(bar ) Tj
+42 737 Td
+(1) Tj
 ET
 /F3 12 Tf
 BT
-84 737 Td
-(italic) Tj
+48 737 Td
+(1) Tj
 ET
 /F1 12 Tf
 /F2 12 Tf
 BT
-111 737 Td
-( ) Tj
+54 737 Td
+(1) Tj
 ET
 /F2 12 Tf
 BT
+60 737 Td
+(1) Tj
+ET
+BT
 0 0 1 rg
-114 737 Td
+66 737 Td
 (link) Tj
 0 0 0 rg
 ET
 0 0 1 rg
-113.32399 735.20001 20.676 0.5 re
+65.32399 735.20001 20.676 0.5 re
 f
 0 0 0 rg
 /F1 12 Tf
 /F2 12 Tf
 BT
-134 737 Td
-( baz) Tj
+86 737 Td
+(1) Tj
 ET
 /F1 12 Tf
 /F1 12 Tf
@@ -131,11 +125,11 @@ ET
 endstream
 endobj
 10 0 obj
-548
+375
 endobj
 11 0 obj
 <<
-/Rect [ 114 734 134.67599 749 ]
+/Rect [ 66 734 86.676 749 ]
 /Type /Annot
 /Subtype /Link
 /A <<
@@ -158,8 +152,8 @@ xref
 0000000514 00000 n
 0000000624 00000 n
 0000000849 00000 n
-0000001452 00000 n
-0000001472 00000 n
+0000001279 00000 n
+0000001299 00000 n
 trailer
 <<
 /Root 1 0 R
@@ -167,5 +161,5 @@ trailer
 /Size 12
 >>
 startxref
-1626
+1449
 %%EOF

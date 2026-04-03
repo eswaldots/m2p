@@ -6,10 +6,19 @@
 
 #include "util.h"
 
+// TODO: maybe I can create two structs, and instead of declaring an MD_SPANTYPE
+// or MD_BLOCKTYPE, I can declare a int and cast the type later.
 typedef struct {
         MD_SPANTYPE type;
         char *detail;
 } Span;
+
+typedef struct {
+        MD_BLOCKTYPE type;
+        char *detail;
+        // used for blocks like OL
+        int count;
+} Block;
 
 typedef struct StyleBuffer {
         char *detail;
@@ -19,9 +28,12 @@ typedef struct StyleBuffer {
         // TODO: maybe shouldn't be a fixed size, but I don't now edge cases
         // where the span_stack overflows
         Span spans_stack[256];
+        Block blocks_stack[256];
 } StyleBuffer;
 
-int GetMaxPosition(Span v[]) {
+// TODO: Instead of calculating the positions all the time, maybe we can put an
+// index on style buffer? Maybe that is less dumbass
+int GetMaxSPosition(Span v[]) {
         int i;
         for (i = 0; v[i].type != '\0'; ++i)
                 ;
@@ -29,11 +41,21 @@ int GetMaxPosition(Span v[]) {
         return i;
 };
 
+int GetMaxBPosition(Block v[]) {
+        int i;
+        for (i = 0; v[i].type != '\0'; ++i)
+                ;
+
+        return i;
+};
+
+// TODO: for the upside functions maybe I can use the count in struct trick, but
+// I don't know how do with this functions to don't repeat the same
+// implementation twice, maybe I can try something with _Generic C11
 int IsInSpanStack(MD_SPANTYPE type, Span v[]) {
-        int max_pos = GetMaxPosition(v);
+        int max_pos = GetMaxSPosition(v);
 
         for (int i = 0; i < max_pos + 1; ++i) {
-                printf("IsInSpanStack: %d\n", v[i].type);
                 if ((v[i].type - 1) == type) {
                         return 1;
                 }
@@ -42,11 +64,36 @@ int IsInSpanStack(MD_SPANTYPE type, Span v[]) {
         return 0;
 }
 
-int GetSpanInStack(MD_SPANTYPE type, Span v[]) {
-        int max_pos = GetMaxPosition(v);
+int IsInBlockStack(MD_BLOCKTYPE type, Block v[]) {
+        int max_pos = GetMaxBPosition(v);
 
         for (int i = 0; i < max_pos + 1; ++i) {
-                printf("GetSpanInStack: %d\n", v[i].type);
+                if ((v[i].type - 1) == type) {
+                        return 1;
+                }
+        }
+
+        return 0;
+}
+
+// TODO: Also for this should be another way to don't repeat the
+// implementation...
+int GetSpanInStack(MD_SPANTYPE type, Span v[]) {
+        int max_pos = GetMaxSPosition(v);
+
+        for (int i = 0; i < max_pos + 1; ++i) {
+                if ((v[i].type - 1) == type) {
+                        return i;
+                }
+        }
+
+        return -1;
+}
+
+int GetBlockInStack(MD_BLOCKTYPE type, Block v[]) {
+        int max_pos = GetMaxBPosition(v);
+
+        for (int i = 0; i < max_pos + 1; ++i) {
                 if ((v[i].type - 1) == type) {
                         return i;
                 }
@@ -77,7 +124,7 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
         buffer[size] = '\0';
 
         StyleBuffer *buf = userdata;
-        int index = GetMaxPosition(buf->spans_stack);
+        int index = GetMaxSPosition(buf->spans_stack);
 
         int is_italic = IsInSpanStack(MD_SPAN_EM, buf->spans_stack);
         int is_bold = IsInSpanStack(MD_SPAN_STRONG, buf->spans_stack);
@@ -88,6 +135,22 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                 SetFontTypeAndSize(P_SIZE, FONT_BOLD);
         } else if (is_italic) {
                 SetFontTypeAndSize(P_SIZE, FONT_ITALIC);
+        }
+
+        if (IsInBlockStack(MD_BLOCK_LI, buf->blocks_stack)) {
+                if (IsInBlockStack(MD_BLOCK_UL, buf->blocks_stack)) {
+                        WriteDotSymbol();
+                } else {
+                        int indexf =
+                            GetBlockInStack(MD_BLOCK_OL, buf->blocks_stack);
+
+                        char *format;
+
+                        sprintf(format, "%d. ",
+                                buf->blocks_stack[indexf].count);
+
+                        WriteText(format);
+                }
         }
 
         if (IsInSpanStack(MD_SPAN_A, buf->spans_stack)) {
@@ -106,8 +169,29 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
 int EnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         StyleBuffer *buf = userdata;
         // TODO: use an array please
+        //
+        int index = GetMaxBPosition(buf->blocks_stack);
+        buf->blocks_stack[index].type = type + 1;
 
-        printf("type: %d\n", type);
+        printf("DEBUG: Entering in block type: %d\n", type);
+        if (type == MD_BLOCK_OL) {
+                buf->blocks_stack[index].count = 0;
+        }
+
+        if (type == MD_BLOCK_LI &&
+            IsInBlockStack(MD_BLOCK_OL, buf->blocks_stack)) {
+                int id = GetBlockInStack(MD_BLOCK_OL, buf->blocks_stack);
+                int last = buf->blocks_stack[id].count;
+
+                char *new_detail = malloc(1);
+                sprintf(new_detail, "%d", (last + 1));
+
+                buf->blocks_stack[index].detail = new_detail;
+                buf->blocks_stack[id].count = last + 1;
+
+                free(new_detail);
+        }
+
         if (type == MD_BLOCK_OL) {
                 buf->current_block = type;
         }
@@ -131,14 +215,19 @@ int EnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
                 }
         }
 
-        if (type == MD_BLOCK_LI) {
-                WriteDotSymbol();
-        }
-
         return 0;
 };
 int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         StyleBuffer *buf = userdata;
+
+        int index = GetMaxBPosition(buf->blocks_stack);
+
+        buf->spans_stack[index - 1].type = 0;
+        buf->spans_stack[index - 1].detail = 0;
+
+        if (type == MD_BLOCK_OL) {
+                int last = buf->blocks_stack[index - 1].count = 0;
+        }
 
         if (type == MD_BLOCK_LI) {
                 printf("DEBUG: Leaving block with soft break\n");
@@ -166,7 +255,7 @@ int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
         // TODO: handle bold and italic
 
         StyleBuffer *buf = userdata;
-        int index = GetMaxPosition(buf->spans_stack);
+        int index = GetMaxSPosition(buf->spans_stack);
         printf("PUTTING STACK %d IN: %d\n", type, index);
 
         buf->spans_stack[index].type = type + 1;
@@ -201,7 +290,7 @@ int LeaveSpan(MD_SPANTYPE type, void *detail, void *userdata) {
 
         printf("DEBUG: Leaving span, resetting font style\n");
 
-        int index = GetMaxPosition(buf->spans_stack);
+        int index = GetMaxSPosition(buf->spans_stack);
 
         buf->spans_stack[index - 1].type = 0;
         buf->spans_stack[index - 1].detail = 0;
