@@ -49,8 +49,9 @@ By the moment, `m2p` is a huge WIP, so don't expect too much features.
     - [ ] Support images
     - [ ] Support escaping characters
 - [ ] Add different levels of logging
-- [ ] Support nested styles
+- [x] Support nested styles
 - [ ] Support custom fonts
 - [ ] Support custom themes
+- [ ] Support YAML metadata parsing
 - [ ] Support custom configuration
 - [ ] Support inline HTML (in discussion)
