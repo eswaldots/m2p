@@ -226,7 +226,10 @@ int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         buf->spans_stack[index - 1].detail = 0;
 
         if (type == MD_BLOCK_OL) {
+                printf("DEBUG: Leaving OL block\n");
                 int last = buf->blocks_stack[index - 1].count = 0;
+
+                WriteHardBreak();
         }
 
         if (type == MD_BLOCK_LI) {

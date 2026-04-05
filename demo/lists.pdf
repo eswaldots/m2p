@@ -87,6 +87,7 @@ BT
 (First item) Tj
 ET
 /F1 12 Tf
+/F1 12 Tf
 BT
 36 721 Td
 (2. ) Tj
@@ -96,6 +97,7 @@ BT
 (Second item) Tj
 ET
 /F1 12 Tf
+/F1 12 Tf
 BT
 36 705 Td
 (3. ) Tj
@@ -104,6 +106,7 @@ BT
 49 705 Td
 (Third item) Tj
 ET
+/F1 12 Tf
 /F1 12 Tf
 BT
 36 689 Td
@@ -115,12 +118,72 @@ BT
 ET
 /F1 12 Tf
 /F1 12 Tf
+BT
+36 673 Td
+(5. ) Tj
+ET
+BT
+49 673 Td
+(First item) Tj
+ET
+/F1 12 Tf
+/F1 12 Tf
+BT
+36 657 Td
+(6. ) Tj
+ET
+BT
+49 657 Td
+(Second item) Tj
+ET
+/F1 12 Tf
+/F1 12 Tf
+BT
+36 641 Td
+(7. ) Tj
+ET
+BT
+49 641 Td
+(Third item) Tj
+ET
+/F1 12 Tf
+BT
+102 641 Td
+(8. ) Tj
+ET
+BT
+115 641 Td
+(Indented item) Tj
+ET
+/F1 12 Tf
+BT
+36 625 Td
+(9. ) Tj
+ET
+BT
+49 625 Td
+(Indented item) Tj
+ET
+/F1 12 Tf
+/F1 12 Tf
+/F1 12 Tf
+BT
+36 561 Td
+(10. ) Tj
+ET
+BT
+56 561 Td
+(Fourth item) Tj
+ET
+/F1 12 Tf
+/F1 12 Tf
+/F1 12 Tf
 /F1 12 Tf
 
 endstream
 endobj
 10 0 obj
-347
+850
 endobj
 xref
 0 11
@@ -134,7 +197,7 @@ xref
 0000000514 00000 n
 0000000624 00000 n
 0000000820 00000 n
-0000001222 00000 n
+0000001725 00000 n
 trailer
 <<
 /Root 1 0 R
@@ -142,5 +205,5 @@ trailer
 /Size 11
 >>
 startxref
-1242
+1745
 %%EOF
