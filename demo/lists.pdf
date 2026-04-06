@@ -22,7 +22,7 @@ endobj
 4 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica
+/BaseFont /Times-Roman
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -30,7 +30,7 @@ endobj
 5 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica-Bold
+/BaseFont /Times-Bold
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -38,7 +38,7 @@ endobj
 6 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica-Oblique
+/BaseFont /Times-Italic
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -46,7 +46,7 @@ endobj
 7 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica-BoldOblique
+/BaseFont /Times-BoldItalic
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -83,7 +83,7 @@ BT
 (1. ) Tj
 ET
 BT
-49 737 Td
+48 737 Td
 (First item) Tj
 ET
 /F1 12 Tf
@@ -92,7 +92,7 @@ BT
 (2. ) Tj
 ET
 BT
-49 721 Td
+48 721 Td
 (Second item) Tj
 ET
 /F1 12 Tf
@@ -101,7 +101,7 @@ BT
 (3. ) Tj
 ET
 BT
-49 705 Td
+48 705 Td
 (Third item) Tj
 ET
 /F1 12 Tf
@@ -110,7 +110,7 @@ BT
 (4. ) Tj
 ET
 BT
-49 689 Td
+48 689 Td
 (Fourth item) Tj
 ET
 /F1 12 Tf
@@ -119,7 +119,7 @@ BT
 (5. ) Tj
 ET
 BT
-49 673 Td
+48 673 Td
 (First item) Tj
 ET
 /F1 12 Tf
@@ -128,7 +128,7 @@ BT
 (6. ) Tj
 ET
 BT
-49 657 Td
+48 657 Td
 (Second item) Tj
 ET
 /F1 12 Tf
@@ -137,17 +137,20 @@ BT
 (7. ) Tj
 ET
 BT
-49 641 Td
+48 641 Td
 (Third item) Tj
 ET
 /F1 12 Tf
+/F1 12 Tf
+36 625 523.276 0.1 re
+f
 /F1 12 Tf
 /F1 12 Tf
 
 endstream
 endobj
 10 0 obj
-549
+583
 endobj
 xref
 0 11
@@ -156,12 +159,12 @@ xref
 0000000087 00000 n
 0000000146 00000 n
 0000000207 00000 n
-0000000305 00000 n
-0000000408 00000 n
-0000000514 00000 n
-0000000624 00000 n
-0000000820 00000 n
-0000001424 00000 n
+0000000307 00000 n
+0000000406 00000 n
+0000000507 00000 n
+0000000612 00000 n
+0000000808 00000 n
+0000001446 00000 n
 trailer
 <<
 /Root 1 0 R
@@ -169,5 +172,5 @@ trailer
 /Size 11
 >>
 startxref
-1444
+1466
 %%EOF

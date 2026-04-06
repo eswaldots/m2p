@@ -177,6 +177,9 @@ int EnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         if (type == MD_BLOCK_OL) {
                 buf->blocks_stack[index].count = 0;
         }
+        if (type == MD_BLOCK_HR) {
+                WriteHR();
+        }
 
         if (type == MD_BLOCK_LI &&
             IsInBlockStack(MD_BLOCK_OL, buf->blocks_stack)) {
@@ -222,8 +225,8 @@ int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
 
         int index = GetMaxBPosition(buf->blocks_stack);
 
-        buf->spans_stack[index - 1].type = 0;
-        buf->spans_stack[index - 1].detail = 0;
+        buf->blocks_stack[index - 1].type = 0;
+        buf->blocks_stack[index - 1].detail = 0;
 
         if (type == MD_BLOCK_OL) {
                 printf("DEBUG: Leaving OL block\n");
@@ -238,7 +241,8 @@ int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
 
                 SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
                 return 0;
-        } else if (buf->current_block != MD_BLOCK_OL) {
+        } else if (buf->current_block != MD_BLOCK_OL &&
+                   !IsInBlockStack(MD_BLOCK_UL, buf->blocks_stack)) {
                 printf("DEBUG: Leaving block: %d \n", type);
                 printf("DEBUG: Leaving block with hard break\n");
                 WriteHardBreak();

@@ -25,3 +25,4 @@ void WriteSoftBreak();
 
 void WriteDotSymbol();
 void WriteLink(const char *text, const char *uri);
+void WriteHR();

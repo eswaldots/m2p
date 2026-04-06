@@ -66,11 +66,10 @@ void InitDocument(char *filename) {
         HPDF_Page page;
 
         // TODO: add custom font support
-        HPDF_Font regular = HPDF_GetFont(pdf, "Helvetica", NULL);
-        HPDF_Font bold = HPDF_GetFont(pdf, "Helvetica-Bold", NULL);
-        HPDF_Font italic = HPDF_GetFont(pdf, "Helvetica-Oblique", NULL);
-        HPDF_Font italic_bold =
-            HPDF_GetFont(pdf, "Helvetica-BoldOblique", NULL);
+        HPDF_Font regular = HPDF_GetFont(pdf, "Times-Roman", NULL);
+        HPDF_Font bold = HPDF_GetFont(pdf, "Times-Bold", NULL);
+        HPDF_Font italic = HPDF_GetFont(pdf, "Times-Italic", NULL);
+        HPDF_Font italic_bold = HPDF_GetFont(pdf, "Times-BoldItalic", NULL);
 
         page = HPDF_AddPage(pdf);
 
@@ -321,4 +320,15 @@ void WriteHardBreak() {
 void WriteSoftBreak() {
         data.xpos = PAGE_MARGIN;
         data.ypos -= LINE_HEIGHT / 2;
+}
+
+void WriteHR() {
+        data.ypos += LINE_HEIGHT;
+
+        HPDF_Page_Rectangle(data.page, data.xpos, data.ypos,
+                            HPDF_Page_GetWidth(data.page) - PAGE_MARGIN * 2,
+                            0.1);
+        HPDF_Page_Fill(data.page);
+
+        data.ypos += LINE_HEIGHT / 3;
 }
