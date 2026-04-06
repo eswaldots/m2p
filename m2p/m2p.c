@@ -239,7 +239,6 @@ int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
                 SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
                 return 0;
         } else if (buf->current_block != MD_BLOCK_OL) {
-                printf("buf: %d\n", buf->current_block);
                 printf("DEBUG: Leaving block: %d \n", type);
                 printf("DEBUG: Leaving block with hard break\n");
                 WriteHardBreak();
