@@ -323,12 +323,13 @@ void WriteSoftBreak() {
 }
 
 void WriteHR() {
-        data.ypos += LINE_HEIGHT;
+        data.xpos = PAGE_MARGIN;
+        data.ypos -= LINE_HEIGHT / 2;
 
         HPDF_Page_Rectangle(data.page, data.xpos, data.ypos,
                             HPDF_Page_GetWidth(data.page) - PAGE_MARGIN * 2,
                             0.1);
         HPDF_Page_Fill(data.page);
 
-        data.ypos += LINE_HEIGHT / 3;
+        data.ypos -= LINE_HEIGHT / 1.5;
 }

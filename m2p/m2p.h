@@ -1,3 +1,6 @@
+#ifndef M2P_H
+#define M2P_H
+
 typedef enum HEADING_FONT_SIZE {
         HEADING_H1_SIZE = 20,
         HEADING_H2_SIZE = 18,
@@ -8,9 +11,10 @@ typedef enum HEADING_FONT_SIZE {
         P_SIZE = 12,
 } HEADING_FONT_SIZE;
 
-typedef enum mp_log_level_t {
-        MP_LOG_ERROR,
-        MP_LOG_WARNING,
-        MP_LOG_DEBUG,
-        MP_LOG_INFO,
-} mp_log_level;
+typedef enum {
+        M2P_LOG_WARNING = 1,
+        M2P_LOG_INFO = 2,
+        M2P_LOG_ERROR = 3,
+        M2P_LOG_DEBUG = 4,
+} m2p_log_level;
+#endif

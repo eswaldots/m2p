@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 
+
 add_compile_options(-Wall -Wextra -Wpedantic -g)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(libpdf VERSION 0.1
                   DESCRIPTION "pdf library to generate markdown-like objects inside a pdf"

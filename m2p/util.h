@@ -1,5 +1,8 @@
-#pragma "m2p.h"
+#ifndef UTIL_H
 
-char *change_ext(char *filename);
+#define UTIL_H
+#include "m2p.h"
+void change_ext(char *filename, char *buffer);
 
-// char m2p_printf(mp_log_level level, const char *format, ...);
+int m2p_printf(m2p_log_level level, const char *format, ...);
+#endif

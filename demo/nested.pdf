@@ -22,7 +22,7 @@ endobj
 4 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica
+/BaseFont /Times-Roman
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -30,7 +30,7 @@ endobj
 5 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica-Bold
+/BaseFont /Times-Bold
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -38,7 +38,7 @@ endobj
 6 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica-Oblique
+/BaseFont /Times-Italic
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -46,7 +46,7 @@ endobj
 7 0 obj
 <<
 /Type /Font
-/BaseFont /Helvetica-BoldOblique
+/BaseFont /Times-BoldItalic
 /Subtype /Type1
 /Encoding /StandardEncoding
 >>
@@ -75,47 +75,83 @@ endobj
 stream
 /F1 12 Tf
 /F2 20 Tf
-/F1 12 Tf
 BT
-36 737 Td
-(1) Tj
+36 769 Td
+(Nested Blocks) Tj
 ET
-/F2 12 Tf
+/F1 12 Tf
+34 740 m
+34 741.104 34.89599 742 36 742 c
+37.104 742 38 741.104 38 740 c
+38 738.89599 37.104 738 36 738 c
+34.89599 738 34 738.89599 34 740 c
+f
 BT
 42 737 Td
-(1) Tj
+(foo ) Tj
+ET
+/F2 12 Tf
+58 740 m
+58 741.104 58.89599 742 60 742 c
+61.104 742 62 741.104 62 740 c
+62 738.89599 61.104 738 60 738 c
+58.89599 738 58 738.89599 58 740 c
+f
+BT
+66 737 Td
+(bar ) Tj
 ET
 /F3 12 Tf
+85 740 m
+85 741.104 85.896 742 87 742 c
+88.10399 742 89 741.104 89 740 c
+89 738.89599 88.10399 738 87 738 c
+85.896 738 85 738.89599 85 740 c
+f
 BT
-48 737 Td
-(1) Tj
+93 737 Td
+(italic) Tj
 ET
 /F1 12 Tf
 /F2 12 Tf
+115 740 m
+115 741.104 115.896 742 117 742 c
+118.10399 742 119 741.104 119 740 c
+119 738.89599 118.10399 738 117 738 c
+115.896 738 115 738.89599 115 740 c
+f
 BT
-54 737 Td
-(1) Tj
+123 737 Td
+( ) Tj
 ET
 /F2 12 Tf
-BT
-60 737 Td
-(1) Tj
-ET
+124 740 m
+124 741.104 124.896 742 126 742 c
+127.10399 742 128 741.104 128 740 c
+128 738.89599 127.10399 738 126 738 c
+124.896 738 124 738.89599 124 740 c
+f
 BT
 0 0 1 rg
-66 737 Td
+132 737 Td
 (link) Tj
 0 0 0 rg
 ET
 0 0 1 rg
-65.32399 735.20001 20.676 0.5 re
+131.98399 735.20001 20.016 0.5 re
 f
 0 0 0 rg
 /F1 12 Tf
 /F2 12 Tf
+150 740 m
+150 741.104 150.89599 742 152 742 c
+153.104 742 154 741.104 154 740 c
+154 738.89599 153.104 738 152 738 c
+150.89599 738 150 738.89599 150 740 c
+f
 BT
-86 737 Td
-(1) Tj
+158 737 Td
+( baz) Tj
 ET
 /F1 12 Tf
 /F1 12 Tf
@@ -125,11 +161,11 @@ ET
 endstream
 endobj
 10 0 obj
-375
+1302
 endobj
 11 0 obj
 <<
-/Rect [ 66 734 86.676 749 ]
+/Rect [ 132 734 152.016 749 ]
 /Type /Annot
 /Subtype /Link
 /A <<
@@ -147,13 +183,13 @@ xref
 0000000087 00000 n
 0000000146 00000 n
 0000000207 00000 n
-0000000305 00000 n
-0000000408 00000 n
-0000000514 00000 n
-0000000624 00000 n
-0000000849 00000 n
-0000001279 00000 n
-0000001299 00000 n
+0000000307 00000 n
+0000000406 00000 n
+0000000507 00000 n
+0000000612 00000 n
+0000000837 00000 n
+0000002194 00000 n
+0000002215 00000 n
 trailer
 <<
 /Root 1 0 R
@@ -161,5 +197,5 @@ trailer
 /Size 12
 >>
 startxref
-1449
+2367
 %%EOF

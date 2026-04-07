@@ -2,6 +2,7 @@
 #include "../include/libpdf.h"
 #include "md4c.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "util.h"
@@ -39,7 +40,7 @@ int GetMaxSPosition(Span v[]) {
                 ;
 
         return i;
-};
+}
 
 int GetMaxBPosition(Block v[]) {
         int i;
@@ -47,7 +48,7 @@ int GetMaxBPosition(Block v[]) {
                 ;
 
         return i;
-};
+}
 
 // TODO: for the upside functions maybe I can use the count in struct trick, but
 // I don't know how do with this functions to don't repeat the same
@@ -105,12 +106,12 @@ int GetBlockInStack(MD_BLOCKTYPE type, Block v[]) {
 int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                void *userdata) {
         if (type == MD_TEXT_SOFTBR) {
-                printf("DEBUG: Introducing soft break\n");
+                m2p_printf(M2P_LOG_DEBUG, "Introducing soft break\n");
                 WriteSoftBreak();
 
                 return 0;
         } else if (type == MD_TEXT_BR) {
-                printf("DEBUG: introducing hard break\n");
+                m2p_printf(M2P_LOG_DEBUG, "introducing hard break\n");
 
                 WriteHardBreak();
 
@@ -124,7 +125,6 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
         buffer[size] = '\0';
 
         StyleBuffer *buf = userdata;
-        int index = GetMaxSPosition(buf->spans_stack);
 
         int is_italic = IsInSpanStack(MD_SPAN_EM, buf->spans_stack);
         int is_bold = IsInSpanStack(MD_SPAN_STRONG, buf->spans_stack);
@@ -144,7 +144,9 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                         int indexf =
                             GetBlockInStack(MD_BLOCK_OL, buf->blocks_stack);
 
-                        char *format;
+                        char *format = NULL;
+                        // TODO: THIS IS WEIRD
+                        format = malloc(strlen("%d .") * sizeof(char));
 
                         sprintf(format, "%d. ",
                                 buf->blocks_stack[indexf].count);
@@ -173,7 +175,7 @@ int EnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         int index = GetMaxBPosition(buf->blocks_stack);
         buf->blocks_stack[index].type = type + 1;
 
-        printf("DEBUG: Entering in block type: %d\n", type);
+        m2p_printf(M2P_LOG_DEBUG, "Entering in block type: %d\n", type);
         if (type == MD_BLOCK_OL) {
                 buf->blocks_stack[index].count = 0;
         }
@@ -219,7 +221,8 @@ int EnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         }
 
         return 0;
-};
+}
+
 int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         StyleBuffer *buf = userdata;
 
@@ -229,22 +232,21 @@ int LeaveBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
         buf->blocks_stack[index - 1].detail = 0;
 
         if (type == MD_BLOCK_OL) {
-                printf("DEBUG: Leaving OL block\n");
-                int last = buf->blocks_stack[index - 1].count = 0;
+                m2p_printf(M2P_LOG_DEBUG, "Leaving OL block with hard break\n");
 
-                WriteHardBreak();
+                WriteSoftBreak();
         }
 
         if (type == MD_BLOCK_LI) {
-                printf("DEBUG: Leaving block with soft break\n");
+                m2p_printf(M2P_LOG_DEBUG, "Leaving block with soft break\n");
                 WriteSoftBreak();
 
                 SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
                 return 0;
         } else if (buf->current_block != MD_BLOCK_OL &&
                    !IsInBlockStack(MD_BLOCK_UL, buf->blocks_stack)) {
-                printf("DEBUG: Leaving block: %d \n", type);
-                printf("DEBUG: Leaving block with hard break\n");
+                m2p_printf(M2P_LOG_DEBUG, "Leaving block: %d \n", type);
+                m2p_printf(M2P_LOG_DEBUG, "Leaving block with hard break\n");
                 WriteHardBreak();
 
                 SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
@@ -262,13 +264,8 @@ int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
 
         StyleBuffer *buf = userdata;
         int index = GetMaxSPosition(buf->spans_stack);
-        printf("PUTTING STACK %d IN: %d\n", type, index);
 
         buf->spans_stack[index].type = type + 1;
-
-        for (int i = 0; i < index + 1; ++i) {
-                printf("DEBUG PRINT: %d\n", buf->spans_stack[i]);
-        }
 
         // here will send the details
         switch (type) {
@@ -281,20 +278,21 @@ int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
 
                 buffer[link->href.size] = '\0';
 
-                printf("DEBUG: Inserting href detail in stack %d: %s\n", index,
-                       buffer);
+                m2p_printf(M2P_LOG_DEBUG,
+                           "Inserting href detail in stack %d: %s\n", index,
+                           buffer);
                 buf->spans_stack[index].detail = buffer;
         default:
                 break;
         }
 
         return 0;
-};
+}
 
 int LeaveSpan(MD_SPANTYPE type, void *detail, void *userdata) {
         StyleBuffer *buf = userdata;
 
-        printf("DEBUG: Leaving span, resetting font style\n");
+        m2p_printf(M2P_LOG_DEBUG, "Leaving span, resetting font style\n");
 
         int index = GetMaxSPosition(buf->spans_stack);
 
@@ -305,7 +303,7 @@ int LeaveSpan(MD_SPANTYPE type, void *detail, void *userdata) {
         // WriteHardBreak();
 
         return 0;
-};
+}
 
 static void usage(void) {
         printf("USAGE: m2p [...OPTIONS] [FILE]\n"
@@ -314,7 +312,7 @@ static void usage(void) {
 }
 
 int main(int argc, char **argv) {
-        printf("DEBUG: Initializing m2p...\n");
+        m2p_printf(M2P_LOG_DEBUG, "Initializing m2p...\n");
 
         if (argc < 2) {
                 usage();
@@ -322,7 +320,7 @@ int main(int argc, char **argv) {
                 return 0;
         }
 
-        printf("DEBUG: Opening input file...\n");
+        m2p_printf(M2P_LOG_DEBUG, "Opening input file...\n");
         FILE *f = fopen(argv[1], "r");
 
         if (f == NULL) {
@@ -333,31 +331,49 @@ int main(int argc, char **argv) {
                 return 1;
         }
 
-        printf("DEBUG: Reading input file...\n");
+        m2p_printf(M2P_LOG_DEBUG, "Reading input file...\n");
         fseek(f, 0, SEEK_END);
 
-        printf("DEBUG: Reading length of input file...\n");
+        m2p_printf(M2P_LOG_DEBUG, "Reading length of input file...\n");
         int length = ftell(f);
 
         fseek(f, 0, SEEK_SET);
 
-        printf("DEBUG: Allocating memory for input file buffer...\n");
+        m2p_printf(M2P_LOG_DEBUG,
+                   "Allocating memory for input file buffer...\n");
         char *buffer = malloc(length);
 
         fread(buffer, sizeof(char), length, f);
         fclose(f);
 
-        printf("DEBUG: Determining path of output file...\n");
+        m2p_printf(M2P_LOG_DEBUG, "Determining path of output file...\n");
         // this will not wprk i think
-        char *obuffer = change_ext(argv[1]);
-        printf("DEBUG: Output file will be written to: '%s'\n", obuffer);
+
+        int len = strlen(argv[1]);
+
+        char *obuffer = malloc((len + 1) * sizeof(char));
+
+        if (obuffer == NULL) {
+                m2p_printf(M2P_LOG_ERROR,
+                           "Failed to allocate memory buffer for the output "
+                           "filename, exiting...\n");
+
+                return -1;
+        }
+
+        m2p_printf(M2P_LOG_DEBUG, "Memory allocated for output filename\n");
+
+        change_ext(argv[1], obuffer);
+
+        m2p_printf(M2P_LOG_DEBUG, "Output file will be written to: '%s'\n",
+                   obuffer);
         // The output is the same name of the file but instead of .md a .pdf
         // extension
-        printf("DEBUG: Initializing document writing\n");
+        m2p_printf(M2P_LOG_DEBUG, "Initializing document writing\n");
         InitDocument(obuffer);
 
         // now parse the logic
-        printf("DEBUG: Initializing parser struct\n");
+        m2p_printf(M2P_LOG_DEBUG, "Initializing parser struct\n");
         MD_PARSER parser = {
             .text = HandleText,
             .leave_span = LeaveSpan,
@@ -369,7 +385,7 @@ int main(int argc, char **argv) {
             .abi_version = 0,
         };
 
-        printf("DEBUG: Parsing document\n");
+        m2p_printf(M2P_LOG_DEBUG, "Parsing document\n");
 
         SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
 
@@ -379,7 +395,7 @@ int main(int argc, char **argv) {
 
         md_parse(buffer, (MD_SIZE)length, &parser, &buf);
 
-        printf("DEBUG: Parsing finished\n");
+        m2p_printf(M2P_LOG_DEBUG, "Parsing finished\n");
 
         free(buffer);
 
