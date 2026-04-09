@@ -118,11 +118,17 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                 return 0;
         }
 
-        char *buffer = malloc(strlen(text));
+        char *buffer = NULL;
+        buffer = malloc((size + 1));
 
-        strcpy(buffer, text);
+        // will have to copy the string manually
+        //
+        for (int i = 0; i < (int)(size); ++i) {
+                buffer[i] = text[i];
+        }
+        // strcpy(buffer, text);
 
-        buffer[size] = '\0';
+        // buffer[size + 1] = '\0';
 
         StyleBuffer *buf = userdata;
 
@@ -272,11 +278,12 @@ int EnterSpan(MD_SPANTYPE type, void *detail, void *userdata) {
         case MD_SPAN_A:
                 MD_SPAN_A_DETAIL *link = detail;
 
-                char *buffer = malloc(strlen(link->href.text));
+                char *buffer =
+                    malloc(strnlen(link->href.text, link->href.size) + 1);
 
-                strcpy(buffer, link->href.text);
-
-                buffer[link->href.size] = '\0';
+                for (int i = 0; i < (int)link->href.size; ++i) {
+                        buffer[i] = link->href.text[i];
+                }
 
                 m2p_printf(M2P_LOG_DEBUG,
                            "Inserting href detail in stack %d: %s\n", index,
@@ -297,7 +304,7 @@ int LeaveSpan(MD_SPANTYPE type, void *detail, void *userdata) {
         int index = GetMaxSPosition(buf->spans_stack);
 
         buf->spans_stack[index - 1].type = 0;
-        buf->spans_stack[index - 1].detail = 0;
+        free(buf->spans_stack[index - 1].detail);
 
         SetFontTypeAndSize(P_SIZE, FONT_REGULAR);
         // WriteHardBreak();
@@ -351,7 +358,8 @@ int main(int argc, char **argv) {
 
         int len = strlen(argv[1]);
 
-        char *obuffer = malloc((len + 1) * sizeof(char));
+        // TODO: why five?
+        char *obuffer = malloc((len + 5) * sizeof(char));
 
         if (obuffer == NULL) {
                 m2p_printf(M2P_LOG_ERROR,

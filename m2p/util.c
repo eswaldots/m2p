@@ -1,13 +1,11 @@
 #include "util.h"
 #include "m2p.h"
-#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 void change_ext(char *filename, char *buffer) {
-
         char *match = strstr(filename, ".md");
 
         if (match) {
