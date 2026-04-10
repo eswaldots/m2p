@@ -1,6 +1,7 @@
 #include "m2p.h"
 #include "../include/libpdf.h"
 #include "md4c.h"
+#include "yaml.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -158,6 +159,8 @@ int HandleText(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size,
                                 buf->blocks_stack[indexf].count);
 
                         WriteText(format);
+
+                        free(format);
                 }
         }
 
@@ -194,7 +197,8 @@ int EnterBlock(MD_BLOCKTYPE type, void *detail, void *userdata) {
                 int id = GetBlockInStack(MD_BLOCK_OL, buf->blocks_stack);
                 int last = buf->blocks_stack[id].count;
 
-                char *new_detail = malloc(1);
+                // two for the 0 terminator
+                char *new_detail = malloc(2);
                 sprintf(new_detail, "%d", (last + 1));
 
                 buf->blocks_stack[index].detail = new_detail;
@@ -352,6 +356,8 @@ int main(int argc, char **argv) {
 
         fread(buffer, sizeof(char), length, f);
         fclose(f);
+
+        // yaml_parse(buffer);
 
         m2p_printf(M2P_LOG_DEBUG, "Determining path of output file...\n");
         // this will not wprk i think

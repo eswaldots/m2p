@@ -17,7 +17,7 @@ void ErrorHandler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
 };
 
 int SplitWords(const char *line, char **words) {
-        char *buffer = malloc(strlen(line) - 1);
+        char *buffer = malloc(strlen(line) + 1);
 
         strcpy(buffer, line);
 
@@ -26,7 +26,7 @@ int SplitWords(const char *line, char **words) {
         int count = 0;
 
         while (tok != NULL) {
-                words[count] = strdup(tok);
+                words[count] = strndup(tok, strlen(tok));
 
                 ++count;
 
@@ -173,12 +173,8 @@ void WriteLink(const char *text, const char *uri) {
                         space_left -= data.xpos;
                 }
 
-                printf("DEBUG: splitting words\n");
                 int length = SplitWords(text, words);
 
-                printf("DEBUG: words splitted up succesfully\n");
-
-                printf("DEBUG: length %d\n", length);
                 for (int i = 0; i < length; ++i) {
                         char *word = words[i];
 
@@ -198,6 +194,8 @@ void WriteLink(const char *text, const char *uri) {
 
                         // 6.67 is the space size
                         data.xpos += ww + space_width;
+
+                        free(word);
                 }
 
                 free(words);
@@ -270,12 +268,8 @@ void WriteText(const char *text) {
                         space_left -= data.xpos;
                 }
 
-                printf("DEBUG: splitting words\n");
                 int length = SplitWords(text, words);
 
-                printf("DEBUG: words splitted up succesfully\n");
-
-                printf("DEBUG: length %d\n", length);
                 for (int i = 0; i < length; ++i) {
                         char *word = words[i];
 
@@ -294,9 +288,12 @@ void WriteText(const char *text) {
 
                         // 6.67 is the space size
                         data.xpos += ww + space_width;
+
+                        free(word);
                 }
 
                 free(words);
+                // free(*words);
         } else {
                 HPDF_Page_TextOut(page, data.xpos, data.ypos, text);
 
