@@ -411,8 +411,6 @@ int main(int argc, char **argv) {
 
         m2p_printf(M2P_LOG_DEBUG, "Parsing finished\n");
 
-        free(buffer);
-
         // WriteText("libpdf", 24, FONT_BOLD);
         // WriteHardBreak();
         // WriteText("libpdf", 14, FONT_BOLD);
@@ -420,6 +418,7 @@ int main(int argc, char **argv) {
         // WriteText("libharu, a C library to write into PDF files", 14,
         // FONT_REGULAR);
 
+        free(buffer);
         CloseDocument();
 
         return 0;
