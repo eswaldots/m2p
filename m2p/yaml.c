@@ -4,9 +4,9 @@
 
 int yaml_parse(char *buffer) {
         if (strncmp(buffer, "---", 3) == 0) {
-                m2p_printf(
-                    M2P_LOG_DEBUG,
-                    "Markdown file contains YAML frontmatter, removing...");
+                m2p_printf(M2P_LOG_DEBUG,
+                           "Markdown file contains YAML frontmatter, removing "
+                           "frontmatter...\n");
 
                 return 1;
         } else {

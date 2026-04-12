@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
         fread(buffer, sizeof(char), length, f);
         fclose(f);
 
-        // yaml_parse(buffer);
+        yaml_parse(buffer);
 
         m2p_printf(M2P_LOG_DEBUG, "Determining path of output file...\n");
         // this will not wprk i think
