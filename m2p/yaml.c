@@ -8,6 +8,8 @@ int yaml_parse(char *buffer) {
                            "Markdown file contains YAML frontmatter, removing "
                            "frontmatter...\n");
 
+		// TODO: how I really cut the yaml frontmatter part?
+
                 return 1;
         } else {
                 return 0;
